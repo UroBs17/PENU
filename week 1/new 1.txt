@@ -1,0 +1,103 @@
+New-AzVm `
+    -ResourceGroupName "WIN1B" `
+    -Name "WIN-1B" `
+    -Location "East US" `
+    -VirtualNetworkName "myVnet" `
+    -SubnetName "mySubnet" `
+    -SecurityGroupName "myNetworkSecurityGroup" `
+    -PublicIpAddressName "myPublicIpAddress" `
+    -OpenPorts 80,3389
+	
+Get-AzPublicIpAddress -ResourceGroupName "WIN1B" | Select "IpAddress"
+
+
+az group create --name WIN1C --location eastus
+
+passwordPENU2020!2
+
+az vm create --resource-group WIN1C --name WIN-1C --image win2016datacenter --admin-username michaelpenu- -admin-password passwordPENU2020!2
+
+az vm open-port --port 80 --resource-group WIN1C --name WIN-1C
+
+
+New-AzResourceGroup -Name "LIN2B" -Location "EastUS"
+-------------------
+
+New-AzResourceGroup -Name "LIN2B" -Location "EastUS"
+$subnetConfig = New-AzVirtualNetworkSubnetConfig `
+  -Name "mySubnet" `
+  -AddressPrefix 192.168.1.0/24
+$vnet = New-AzVirtualNetwork `
+  -ResourceGroupName "LIN2B" `
+  -Location "EastUS" `
+  -Name "myVNET" `
+  -AddressPrefix 192.168.0.0/16 `
+  -Subnet $subnetConfig
+$pip = New-AzPublicIpAddress `
+  -ResourceGroupName "LIN2B" `
+  -Location "EastUS" `
+  -AllocationMethod Static `
+  -IdleTimeoutInMinutes 4 `
+  -Name "mypublicdns$(Get-Random)"
+---------------------
+$nsgRuleSSH = New-AzNetworkSecurityRuleConfig `
+  -Name "myNetworkSecurityGroupRuleSSH"  `
+  -Protocol "Tcp" `
+  -Direction "Inbound" `
+  -Priority 1000 `
+  -SourceAddressPrefix * `
+  -SourcePortRange * `
+  -DestinationAddressPrefix * `
+  -DestinationPortRange 22 `
+  -Access "Allow"
+$nsgRuleWeb = New-AzNetworkSecurityRuleConfig `
+  -Name "myNetworkSecurityGroupRuleWWW"  `
+  -Protocol "Tcp" `
+  -Direction "Inbound" `
+  -Priority 1001 `
+  -SourceAddressPrefix * `
+  -SourcePortRange * `
+  -DestinationAddressPrefix * `
+  -DestinationPortRange 80 `
+  -Access "Allow"
+$nsg = New-AzNetworkSecurityGroup `
+  -ResourceGroupName "LIN2B" `
+  -Location "EastUS" `
+  -Name "myNetworkSecurityGroup" `
+  -SecurityRules $nsgRuleSSH,$nsgRuleWeb
+$nic = New-AzNetworkInterface `
+  -Name "myNic" `
+  -ResourceGroupName "LIN2B" `
+  -Location "EastUS" `
+  -SubnetId $vnet.Subnets[0].Id `
+  -PublicIpAddressId $pip.Id `
+  -NetworkSecurityGroupId $nsg.Id
+$securePassword = ConvertTo-SecureString ' ' -AsPlainText -Force
+$cred = New-Object System.Management.Automation.PSCredential ("michaelpenu", $securePassword)
+$vmConfig = New-AzVMConfig `
+  -VMName "myVM" `
+  -VMSize "Standard_D1" | `
+Set-AzVMOperatingSystem `
+  -Linux `
+  -ComputerName "myVM" `
+  -Credential $cred `
+  -DisablePasswordAuthentication | `
+Set-AzVMSourceImage `
+  -PublisherName "Canonical" `
+  -Offer "UbuntuServer" `
+  -Skus "18.04-LTS" `
+  -Version "latest" | `
+Add-AzVMNetworkInterface `
+  -Id $nic.Id
+$sshPublicKey = cat ~/.ssh/id_rsa.pub
+Add-AzVMSshPublicKey `
+  -VM $vmconfig `
+  -KeyData $sshPublicKey `
+  -Path "/home/michaelpenu/.ssh/authorized_keys"
+New-AzVM `
+  -ResourceGroupName "LIN2B" `
+  -Location eastus -VM $vmConfig
+  
+az group create --name LIN2C --location eastus
+
+az vm create --resource-group LIN2C --name myVM --image UbuntuLTS --admin-username michaelpenu --generate-ssh-keys
