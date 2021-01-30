@@ -1,0 +1,14 @@
+git commit
+git branch <nameBranch> // create a new branch in actual HEAD
+git branch -f <nameBranch> <commit>// move nameBranch to a commit(relative or by its hash)
+git checkout <nameBranch> // change reference to the branch specified
+git checkout -b <nameBranch>// create a new branch in actual HEAD and switch to this branch
+git merge <name> //bring the content of the branch <name> to the actual HEAD and make a commit of that merge
+git rebase <name> //bring the content of actual HEAD to the reference of name and make a commit with all changes
+git rebase <branch1> <branch2> // move the content from b2 to b1
+git rebase -i <name> // works like before but there are more commits to add and with certain order that you declare
+git reset <commit> //goes to back in time to the specified commit, only local
+git revert <commit> // makes a commit just to erase the previus one <commit>
+git cherry-pick <c1> <c2> ... //bring all content of c1 , c2 ...  to the actual HEAD an makes a commit  that Cn must not be an ancestor
+git tag <tag> <commit> // create milestones in the tree yo can use it to reference commits
+git describe <reference> //if you use tags tish could be very useful
